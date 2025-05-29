@@ -1,22 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const WelcomeScreen = () => {
+const RolePage = () => {
     const navigate = useNavigate();
 
     return (
         <div style={styles.page}>
             <div style={styles.card}>
                 <img src="/HEALTH.png" alt="Health Logo" style={styles.logo} />
-
                 <h1 style={styles.title}>Health Buddy</h1>
-                <p style={styles.subtitle}>Welcome</p>
+                <h2 style={styles.subtitle}>Select Role</h2>
 
-                <button style={styles.outlineBtn} onClick={() => navigate('/login')}>
-                    Log In
+                <button style={styles.button} onClick={() => navigate('/signup/patient')}>
+                    Patient
                 </button>
-                <button style={styles.filledBtn} onClick={() => navigate('/roles')}>
-                    Sign Up
+                <button style={styles.button} onClick={() => navigate('/signup/caregiver')}>
+                    Caregiver
                 </button>
             </div>
         </div>
@@ -35,14 +34,14 @@ const styles = {
     card: {
         backgroundColor: '#fff',
         padding: '40px',
-        borderRadius: '20px',
-        boxShadow: '0 15px 40px rgba(0,0,0,0.1)',
-        textAlign: 'center',
+        borderRadius: '16px',
+        boxShadow: '0 15px 30px rgba(0,0,0,0.1)',
         width: '90%',
         maxWidth: '360px',
+        textAlign: 'center',
     },
     logo: {
-        width: '80px',
+        width: '70px',
         marginBottom: '20px',
     },
     title: {
@@ -52,33 +51,23 @@ const styles = {
         color: '#0d3c4c',
     },
     subtitle: {
-        fontSize: '1.1rem',
-        color: '#666',
+        fontSize: '1.2rem',
         marginBottom: '30px',
+        color: '#666',
     },
-    outlineBtn: {
+    button: {
         width: '100%',
         padding: '12px',
         fontSize: '1rem',
         borderRadius: '10px',
-        border: '2px solid #00897b',
+        border: '2px solid #26a69a',
         backgroundColor: '#fff',
-        color: '#00897b',
+        color: '#26a69a',
         fontWeight: '600',
+        cursor: 'pointer',
         marginBottom: '15px',
-        cursor: 'pointer',
-    },
-    filledBtn: {
-        width: '100%',
-        padding: '12px',
-        fontSize: '1rem',
-        borderRadius: '10px',
-        border: 'none',
-        backgroundColor: '#00897b',
-        color: '#fff',
-        fontWeight: '600',
-        cursor: 'pointer',
+        transition: '0.3s',
     },
 };
 
-export default WelcomeScreen;
+export default RolePage;
