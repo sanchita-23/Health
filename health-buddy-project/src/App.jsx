@@ -5,6 +5,8 @@ import SplashScreen from './SplashScreen';
 import WelcomeScreen from './WelcomeScreen';
 import LoginPage from './LoginPage';
 import RolePage from './RolePage';
+import PatientSignup from './PatientSignup';
+import CaregiverSignup from './CaregiverSignup';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -23,6 +25,8 @@ function App() {
           <Route path="/" element={<WelcomeScreen />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/roles" element={<RolePage />} />
+            <Route path="/signup/patient" element={<PatientSignup />} />
+            <Route path="/signup/caregiver" element={<CaregiverSignup />} />
         </Routes>
       )}
     </BrowserRouter>
