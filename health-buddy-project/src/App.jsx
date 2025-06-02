@@ -7,6 +7,7 @@ import LoginPage from './LoginPage';
 import RolePage from './RolePage';
 import PatientSignup from './PatientSignup';
 import CaregiverSignup from './CaregiverSignup';
+ import ForgotPassword from './ForgotPassword'; 
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -27,6 +28,9 @@ function App() {
           <Route path="/roles" element={<RolePage />} />
             <Route path="/signup/patient" element={<PatientSignup />} />
             <Route path="/signup/caregiver" element={<CaregiverSignup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+          
+
         </Routes>
       )}
     </BrowserRouter>

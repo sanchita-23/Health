@@ -52,9 +52,10 @@ const LoginPage = () => {
                 {error && <p style={styles.error}>{error}</p>}
 
                 <div style={styles.forgotWrapper}>
-                    <span style={styles.link} onClick={() => alert("Password reset coming soon")}>
-                        Forgot password?
-                    </span>
+                   <span style={styles.link} onClick={() => navigate('/forgot-password')}>
+                     Forgot password?
+                   </span>
+
                 </div>
 
                 <button style={styles.button} onClick={handleLogin}>Log In</button>
