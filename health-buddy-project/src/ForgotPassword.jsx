@@ -1,75 +1,51 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const LoginPage = () => {
+const ForgotPassword = () => {
+    const [input, setInput] = useState('');
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
 
-    const registeredUsers = {
-        'sanchita@example.com': '123456',
-        'test@example.com': 'abcdef',
-    };
-
-    const handleLogin = () => {
-        if (!email || !password) {
-            setError('Please enter email and password.');
+    const handleSendLink = () => {
+        if (!input.trim()) {
+            alert('Please enter your email, phone, or username.');
             return;
         }
-
-        if (!registeredUsers[email]) {
-            setError('Email not registered. Please sign up first.');
-        } else if (registeredUsers[email] !== password) {
-            setError('Invalid password.');
-        } else {
-            setError('');
-            alert('Login successful!');
-        }
+        alert(`Login link sent to: ${input}`);
     };
 
     return (
         <div style={styles.page}>
             <div style={styles.card} className="slide-in">
-                <h1 style={styles.title}>Login</h1>
+                <div style={styles.icon}>🔒</div>
+                <h1 style={styles.title}>Trouble logging in?</h1>
+                <p style={styles.subtitle}>
+                    Enter your email, phone, or username and we'll send you a link to get back into your account.
+                </p>
 
                 <input
                     type="text"
-                    placeholder="Email or phone"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email, Phone, or Username"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
                     style={styles.input}
                 />
 
-                 <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={styles.input}
-                />
+                <button style={styles.button} onClick={handleSendLink}>Send login link</button>
 
-                {error && <p style={styles.error}>{error}</p>}
+                <p style={styles.link}>Can’t reset your password?</p>
 
-                <div style={styles.forgotWrapper}>
-                    <span style={styles.link} onClick={() => navigate('/forgot-password')}>
-                        Forgot password?
-                    </span>
+                <div style={styles.divider}><span>OR</span></div>
 
-                </div>
-                <button style={styles.button} onClick={handleLogin}>Log In</button>
-
-                <p style={styles.signupText}>
-                    Don’t have an account?{' '}
-                    <span style={styles.link} onClick={() => navigate('/roles')}>
-                        Sign up
-                    </span>
+                <p style={styles.linkBold} onClick={() => navigate('/roles')}>
+                    Create new account
                 </p>
-            </div>
 
-            {/* Animation CSS */}
-            <style>
-                {`
+                <button style={styles.back} onClick={() => navigate('/login')}>
+                    Back to login
+                </button>
+
+                <style>
+                    {`
           .slide-in {
             animation: slideFadeIn 0.6s ease forwards;
           }
@@ -100,8 +76,9 @@ const LoginPage = () => {
             text-decoration: underline;
             color: #00897b;
           }
-        `}
-            </style>
+          `}
+                </style>
+            </div>
         </div>
     );
 };
@@ -125,10 +102,19 @@ const styles = {
         textAlign: 'center',
         animation: 'slideFadeIn 0.5s ease',
     },
+    icon: {
+        fontSize: '48px',
+        marginBottom: '15px',
+    },
     title: {
-        fontSize: '2rem',
+        fontSize: '1.7rem',
         fontWeight: '700',
-        marginBottom: '25px',
+        marginBottom: '10px',
+    },
+    subtitle: {
+        fontSize: '0.95rem',
+        color: '#555',
+        marginBottom: '20px',
     },
     input: {
         width: '100%',
@@ -138,16 +124,6 @@ const styles = {
         borderRadius: '8px',
         border: '1px solid #ccc',
         transition: '0.3s',
-    },
-    error: {
-        color: 'red',
-        fontSize: '0.9rem',
-        marginBottom: '10px',
-    },
-    forgotWrapper: {
-        width: '100%',
-        textAlign: 'right',
-        marginBottom: '20px',
     },
     button: {
         width: '100%',
@@ -160,18 +136,35 @@ const styles = {
         fontWeight: '600',
         cursor: 'pointer',
         transition: '0.3s',
-        marginBottom: '20px',
-    },
-    signupText: {
-        fontSize: '0.95rem',
-        color: '#555',
+        marginBottom: '10px',
     },
     link: {
+        fontSize: '0.85rem',
+        color: '#888',
+        marginBottom: '10px',
+    },
+    divider: {
+        fontSize: '0.85rem',
+        color: '#aaa',
+        margin: '15px 0',
+    },
+    linkBold: {
         color: '#00897b',
         fontWeight: '600',
         cursor: 'pointer',
-        transition: '0.3s',
+        marginBottom: '20px',
+    },
+    back: {
+        width: '100%',
+        padding: '12px',
+        fontSize: '1rem',
+        backgroundColor: '#f0f0f0',
+        color: '#333',
+        border: 'none',
+        borderRadius: '8px',
+        fontWeight: '500',
+        cursor: 'pointer',
     },
 };
 
-export default LoginPage;
+export default ForgotPassword;

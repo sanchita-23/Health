@@ -25,17 +25,37 @@ const PatientSignup = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Basic required field validation
+        for (let key in form) {
+            if (key !== 'certification' && key !== 'agree' && form[key].toString().trim() === '') {
+                alert(`Please fill in the ${key.replace(/([A-Z])/g, ' $1')}`);
+                return;
+            }
+        }
+
+        // Certification file required
+        if (!form.certification) {
+            alert('Please upload a certification file.');
+            return;
+        }
+
+        // Terms & Conditions checkbox
         if (!form.agree) {
             alert('Please agree to the Terms & Conditions');
             return;
         }
+
+        // Password match check
         if (form.password !== form.confirmPassword) {
             alert('Passwords do not match');
             return;
         }
-        // TODO: Submit to Firebase later
+
+        // Submit logic placeholder
         alert('Form submitted successfully!');
     };
+      
 
     return (
         <div style={styles.page}>
