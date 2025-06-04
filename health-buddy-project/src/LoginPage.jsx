@@ -7,9 +7,10 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const registeredUsers = {
-        'sanchita@example.com': '123456',
-        'test@example.com': 'abcdef',
+    // Users database with roles
+    const users = {
+        'sanchita@example.com': { password: '123456', role: 'caregiver' },
+        'surekha@example.com': { password: 'abcdef', role: 'patient' },
     };
 
     const handleLogin = () => {
@@ -18,13 +19,20 @@ const LoginPage = () => {
             return;
         }
 
-        if (!registeredUsers[email]) {
+        const user = users[email];
+
+        if (!user) {
             setError('Email not registered. Please sign up first.');
-        } else if (registeredUsers[email] !== password) {
+        } else if (user.password !== password) {
             setError('Invalid password.');
         } else {
             setError('');
-            alert('Login successful!');
+            if (user.role === 'caregiver') {
+                navigate('/caregiver-dashboard', { state: { username: email.split('@')[0] } });
+
+            } else if (user.role === 'patient') {
+                navigate('/patient-dashboard');
+            }
         }
     };
 
@@ -41,7 +49,7 @@ const LoginPage = () => {
                     style={styles.input}
                 />
 
-                 <input
+                <input
                     type="password"
                     placeholder="Password"
                     value={password}
@@ -55,8 +63,8 @@ const LoginPage = () => {
                     <span style={styles.link} onClick={() => navigate('/forgot-password')}>
                         Forgot password?
                     </span>
-
                 </div>
+
                 <button style={styles.button} onClick={handleLogin}>Log In</button>
 
                 <p style={styles.signupText}>
@@ -70,37 +78,37 @@ const LoginPage = () => {
             {/* Animation CSS */}
             <style>
                 {`
-          .slide-in {
-            animation: slideFadeIn 0.6s ease forwards;
-          }
+                    .slide-in {
+                        animation: slideFadeIn 0.6s ease forwards;
+                    }
 
-          @keyframes slideFadeIn {
-            0% {
-              opacity: 0;
-              transform: translateY(30px);
-            }
-            100% {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
+                    @keyframes slideFadeIn {
+                        0% {
+                            opacity: 0;
+                            transform: translateY(30px);
+                        }
+                        100% {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
 
-          input:focus {
-            outline: none;
-            border-color: #26a69a;
-            box-shadow: 0 0 5px rgba(38, 166, 154, 0.5);
-          }
+                    input:focus {
+                        outline: none;
+                        border-color: #26a69a;
+                        box-shadow: 0 0 5px rgba(38, 166, 154, 0.5);
+                    }
 
-          button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-          }
+                    button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+                    }
 
-          span:hover {
-            text-decoration: underline;
-            color: #00897b;
-          }
-        `}
+                    span:hover {
+                        text-decoration: underline;
+                        color: #00897b;
+                    }
+                `}
             </style>
         </div>
     );
@@ -123,7 +131,6 @@ const styles = {
         maxWidth: '380px',
         boxShadow: '0 15px 40px rgba(0,0,0,0.1)',
         textAlign: 'center',
-        animation: 'slideFadeIn 0.5s ease',
     },
     title: {
         fontSize: '2rem',

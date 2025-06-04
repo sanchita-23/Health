@@ -9,6 +9,8 @@ import PatientSignup from './PatientSignup';
 import CaregiverSignup from './CaregiverSignup';
 import HelpSupport from './HelpSupport';
 import ForgotPassword from './ForgotPassword'; 
+import CaregiverDashboard from './CaregiverDashboard';
+import PatientDashboard from './PatientDashboard';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -35,6 +37,8 @@ function App() {
             <Route path="/help/chatbot" element={<div>Chatbot Page</div>} />
             <Route path="/help/report" element={<div>Report Problem Page</div>} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/caregiver-dashboard" element={<CaregiverDashboard />} />
+            <Route path="/patient-dashboard" element={<PatientDashboard />} />
         </Routes>
       )}
     </BrowserRouter>
