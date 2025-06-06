@@ -7,34 +7,37 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    // Users database with roles
-    const users = {
-        'sanchita@example.com': { password: '123456', role: 'caregiver' },
-        'surekha@example.com': { password: 'abcdef', role: 'patient' },
-    };
-
-    const handleLogin = () => {
+    const handleLogin = async () => {
         if (!email || !password) {
             setError('Please enter email and password.');
             return;
         }
 
-        const user = users[email];
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
 
-        if (!user) {
-            setError('Email not registered. Please sign up first.');
-        } else if (user.password !== password) {
-            setError('Invalid password.');
-        } else {
-            setError('');
-            if (user.role === 'caregiver') {
-                navigate('/caregiver-dashboard', { state: { username: email.split('@')[0] } });
+            const data = await response.json();
 
-            } else if (user.role === 'patient') {
-                navigate('/patient-dashboard');
+            if (!response.ok) {
+                setError(data.message || 'Login failed.');
+            } else {
+                setError('');
+                if (data.role === 'caregiver') {
+                    navigate('/caregiver-dashboard', { state: { username: data.name } });
+                } else if (data.role === 'patient') {
+                    navigate('/patient-dashboard');
+                }
             }
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('Something went wrong. Please try again.');
         }
     };
+      
 
     return (
         <div style={styles.page}>

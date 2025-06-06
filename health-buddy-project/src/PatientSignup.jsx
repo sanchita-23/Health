@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const PatientSignup = () => {
+    const navigate = useNavigate();
     const [form, setForm] = useState({
         fullName: '',
         age: '',
@@ -23,39 +25,52 @@ const PatientSignup = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Basic required field validation
+        // Validate fields
         for (let key in form) {
-            if (key !== 'certification' && key !== 'agree' && form[key].toString().trim() === '') {
+            if (key !== 'agree' && form[key].toString().trim() === '') {
                 alert(`Please fill in the ${key.replace(/([A-Z])/g, ' $1')}`);
                 return;
             }
         }
 
-        // Certification file required
-        if (!form.certification) {
-            alert('Please upload a certification file.');
-            return;
-        }
-
-        // Terms & Conditions checkbox
         if (!form.agree) {
             alert('Please agree to the Terms & Conditions');
             return;
         }
 
-        // Password match check
         if (form.password !== form.confirmPassword) {
             alert('Passwords do not match');
             return;
         }
 
-        // Submit logic placeholder
-        alert('Form submitted successfully!');
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: form.fullName,
+                    email: form.contact,
+                    password: form.password,
+                    role: 'patient',
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.message || 'Signup failed.');
+            } else {
+                alert('Signup successful!');
+                navigate('/'); // or navigate('/login');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            alert('Something went wrong during signup.');
+        }
     };
-      
 
     return (
         <div style={styles.page}>
@@ -71,7 +86,9 @@ const PatientSignup = () => {
 
                 <input name="medical" placeholder="Medical Conditions" value={form.medical} onChange={handleChange} style={styles.input} />
                 <input name="address" placeholder="Address" value={form.address} onChange={handleChange} style={styles.input} />
-                <input name="contact" placeholder="Contact Number" value={form.contact} onChange={handleChange} style={styles.input} />
+               <input name="email" placeholder="email" value={form.email} onChange={handleChange} style={styles.input} />
+               
+
                 <input name="emergency" placeholder="Emergency Contact" value={form.emergency} onChange={handleChange} style={styles.input} />
                 <input name="insurance" placeholder="Insurance / Payment Method" value={form.insurance} onChange={handleChange} style={styles.input} />
 

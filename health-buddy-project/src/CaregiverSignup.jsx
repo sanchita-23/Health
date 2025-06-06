@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const CaregiverSignup = () => {
+    const navigate = useNavigate();
     const [form, setForm] = useState({
         fullName: '',
         profession: '',
@@ -9,7 +11,7 @@ const CaregiverSignup = () => {
         serviceArea: '',
         availability: '',
         rate: '',
-        contact: '',
+        email: '',
         password: '',
         confirmPassword: '',
         agree: false,
@@ -23,39 +25,60 @@ const CaregiverSignup = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Basic required field validation
         for (let key in form) {
-            if (key !== 'certification' && key !== 'agree' && form[key].toString().trim() === '') {
-                alert(`Please fill in the ${key.replace(/([A-Z])/g, ' $1')}`);
-                return;
+            if (key !== 'certification' && key !== 'agree') {
+                const value = form[key];
+                if (!value || value.toString().trim() === '') {
+                    alert(`Please fill in the ${key.replace(/([A-Z])/g, ' $1')}`);
+                    return;
+                }
             }
         }
 
-        // Certification file required
         if (!form.certification) {
             alert('Please upload a certification file.');
             return;
         }
 
-        // Terms & Conditions checkbox
         if (!form.agree) {
             alert('Please agree to the Terms & Conditions');
             return;
         }
 
-        // Password match check
         if (form.password !== form.confirmPassword) {
             alert('Passwords do not match');
             return;
         }
 
-        // Submit logic placeholder
-        alert('Form submitted successfully!');
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: form.fullName,
+                    email: form.email,
+                    password: form.password,
+                    role: 'caregiver',
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(`Signup failed: ${data.message || 'Unknown error'}`);
+            } else {
+                alert('Signup successful!');
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            alert('Something went wrong during signup.');
+        }
     };
-      
+
     return (
         <div style={styles.page}>
             <form style={styles.form} onSubmit={handleSubmit}>
@@ -64,6 +87,8 @@ const CaregiverSignup = () => {
                 <input
                     name="fullName"
                     placeholder="Full Name"
+                    aria-label="Full Name"
+                    autoComplete="name"
                     value={form.fullName}
                     onChange={handleChange}
                     style={styles.input}
@@ -72,6 +97,7 @@ const CaregiverSignup = () => {
                 <input
                     name="profession"
                     placeholder="Profession (Nurse, PSW, etc.)"
+                    aria-label="Profession"
                     value={form.profession}
                     onChange={handleChange}
                     style={styles.input}
@@ -80,12 +106,12 @@ const CaregiverSignup = () => {
                 <input
                     name="experience"
                     placeholder="Years of Experience"
+                    aria-label="Experience"
                     value={form.experience}
                     onChange={handleChange}
                     style={styles.input}
                 />
 
-                {/* Custom Upload Box */}
                 <div style={styles.uploadBox}>
                     <label htmlFor="cert-upload" style={styles.uploadLabel}>
                         {form.certification ? form.certification.name : 'Upload Certification (PDF/Image)'}
@@ -95,6 +121,7 @@ const CaregiverSignup = () => {
                         id="cert-upload"
                         name="certification"
                         accept=".pdf,.jpg,.jpeg,.png"
+                        aria-label="Certification Upload"
                         style={{ display: 'none' }}
                         onChange={handleChange}
                     />
@@ -103,6 +130,7 @@ const CaregiverSignup = () => {
                 <input
                     name="serviceArea"
                     placeholder="Service Area (City/Postal Code)"
+                    aria-label="Service Area"
                     value={form.serviceArea}
                     onChange={handleChange}
                     style={styles.input}
@@ -111,6 +139,7 @@ const CaregiverSignup = () => {
                 <input
                     name="availability"
                     placeholder="Availability"
+                    aria-label="Availability"
                     value={form.availability}
                     onChange={handleChange}
                     style={styles.input}
@@ -119,15 +148,18 @@ const CaregiverSignup = () => {
                 <input
                     name="rate"
                     placeholder="Suggested Hourly Rate"
+                    aria-label="Hourly Rate"
                     value={form.rate}
                     onChange={handleChange}
                     style={styles.input}
                 />
 
                 <input
-                    name="contact"
-                    placeholder="Contact Information"
-                    value={form.contact}
+                    name="email"
+                    placeholder="Email Address"
+                    aria-label="Email"
+                    autoComplete="email"
+                    value={form.email}
                     onChange={handleChange}
                     style={styles.input}
                 />
@@ -137,6 +169,8 @@ const CaregiverSignup = () => {
                         type="password"
                         name="password"
                         placeholder="Password"
+                        aria-label="Password"
+                        autoComplete="new-password"
                         value={form.password}
                         onChange={handleChange}
                         style={styles.inputHalf}
@@ -145,6 +179,8 @@ const CaregiverSignup = () => {
                         type="password"
                         name="confirmPassword"
                         placeholder="Confirm Password"
+                        aria-label="Confirm Password"
+                        autoComplete="new-password"
                         value={form.confirmPassword}
                         onChange={handleChange}
                         style={styles.inputHalf}
@@ -155,6 +191,7 @@ const CaregiverSignup = () => {
                     <input
                         type="checkbox"
                         name="agree"
+                        aria-label="Agree to terms"
                         checked={form.agree}
                         onChange={handleChange}
                     />
@@ -163,9 +200,7 @@ const CaregiverSignup = () => {
                     </label>
                 </div>
 
-                <button type="submit" style={styles.button}>
-                    Submit
-                </button>
+                <button type="submit" style={styles.button}>Submit</button>
             </form>
         </div>
     );
