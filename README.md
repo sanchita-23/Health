@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # 🩺 *Health Buddy – Project Proposal*
 
 ---
