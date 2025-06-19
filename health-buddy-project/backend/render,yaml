@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: health-backend
-    env: node
-    buildCommand: npm install
-    startCommand: npm start
-    envVars:
-      - key: MONGO_URI
-        value: mongodb+srv://sanchitakakkar23092004:SanchuVinaik@health-buddy.7bqjutv.mongodb.net/healthbuddy?retryWrites=true&w=majority

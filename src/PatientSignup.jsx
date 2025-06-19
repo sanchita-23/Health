@@ -9,7 +9,7 @@ const PatientSignup = () => {
         gender: '',
         medical: '',
         address: '',
-        contact: '',
+        email: '',
         emergency: '',
         insurance: '',
         password: '',
@@ -52,7 +52,7 @@ const PatientSignup = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: form.fullName,
-                    email: form.contact,
+                    email: form.email,
                     password: form.password,
                     role: 'patient',
                 }),
@@ -64,7 +64,7 @@ const PatientSignup = () => {
                 alert(data.message || 'Signup failed.');
             } else {
                 alert('Signup successful!');
-                navigate('/'); // or navigate('/login');
+                navigate('/');
             }
         } catch (error) {
             console.error('Signup error:', error);
@@ -86,9 +86,7 @@ const PatientSignup = () => {
 
                 <input name="medical" placeholder="Medical Conditions" value={form.medical} onChange={handleChange} style={styles.input} />
                 <input name="address" placeholder="Address" value={form.address} onChange={handleChange} style={styles.input} />
-               <input name="email" placeholder="email" value={form.email} onChange={handleChange} style={styles.input} />
-               
-
+                <input name="email" placeholder="Email" value={form.email} onChange={handleChange} style={styles.input} />
                 <input name="emergency" placeholder="Emergency Contact" value={form.emergency} onChange={handleChange} style={styles.input} />
                 <input name="insurance" placeholder="Insurance / Payment Method" value={form.insurance} onChange={handleChange} style={styles.input} />
 
