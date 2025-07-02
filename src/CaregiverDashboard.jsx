@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
     FaUserFriends, FaCalendarAlt, FaBell, FaUserCircle,
@@ -10,8 +10,11 @@ const CaregiverDashboard = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const username = location.state?.username || 'User';
+    const email = location.state?.email || '';
+    
     const [activeTab, setActiveTab] = useState('dashboard');
-    const [rate, setRate] = useState(35.00);
+    const [rate, setRate] = useState(0);
+    const [caregiverId, setCaregiverId] = useState('');
     const [showSearch, setShowSearch] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,10 +32,53 @@ const CaregiverDashboard = () => {
         "System update completed successfully.",
     ];
 
-    const handleUpdateRate = () => {
+    // ✅ Fetch caregiver ID and hourly rate on mount
+    useEffect(() => {
+        const fetchCaregiver = async () => {
+            try {
+                const res = await fetch('http://localhost:5000/api/auth/caregiver-by-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: location.state?.email }),
+                });
+                const data = await res.json();
+                if (data && data._id) {
+                    setCaregiverId(data._id);  // SETS the id
+                    setRate(data.hourlyRate ? parseFloat(data.hourlyRate).toFixed(2) : "0.00");
+                }
+            } catch (err) {
+                console.error('Error fetching caregiver:', err);
+            }
+        };
+    
+        fetchCaregiver();
+    }, [location.state?.email]);
+    
+    
+
+
+    // ✅ Save updated rate to backend
+    const updateRateInBackend = async (newRate) => {
+    try {
+        console.log('caregiverId:', caregiverId); 
+        await fetch(`http://localhost:5000/api/dashboard/update-rate/${caregiverId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rate: newRate }),
+        });
+    } catch (error) {
+        console.error('Failed to update rate in backend:', error);
+    }
+};
+
+
+    // ✅ Rate update handler
+    const handleUpdateRate = async () => {
         const newRate = prompt("Enter new hourly rate ($):", rate);
         if (newRate && !isNaN(newRate)) {
-            setRate(parseFloat(newRate).toFixed(2));
+            const formattedRate = parseFloat(newRate).toFixed(2);
+            setRate(formattedRate);
+            await updateRateInBackend(formattedRate);
             alert("Rate updated.");
         } else if (newRate !== null) {
             alert("Invalid input.");
@@ -95,25 +141,15 @@ const CaregiverDashboard = () => {
             gap: '12px',
         }),
         icon: { marginRight: '12px' },
-        content: {
-            flex: 1,
-            padding: '40px',
-            position: 'relative',
-        },
+        content: { flex: 1, padding: '40px', position: 'relative' },
         header: {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '30px',
         },
-        greeting: {
-            fontSize: '1.7rem',
-            fontWeight: '600',
-        },
-        subGreeting: {
-            color: '#555',
-            fontSize: '1rem',
-        },
+        greeting: { fontSize: '1.7rem', fontWeight: '600' },
+        subGreeting: { color: '#555', fontSize: '1rem' },
         profile: {
             display: 'flex',
             alignItems: 'center',
@@ -240,7 +276,6 @@ const CaregiverDashboard = () => {
 
     return (
         <div style={styles.page}>
-            {/* Sidebar */}
             <aside style={styles.sidebar}>
                 <div style={styles.sidebarTitle}>Health Buddy</div>
                 {[
@@ -251,17 +286,12 @@ const CaregiverDashboard = () => {
                     { label: 'subscription', icon: <FaCreditCard />, path: '/subscription' },
                     { label: 'support', icon: <FaQuestionCircle />, path: '/support' },
                 ].map(item => (
-                    <div
-                        key={item.label}
-                        style={styles.navItem(item.label)}
-                        onClick={() => { setActiveTab(item.label); navigate(item.path); }}
-                    >
+                    <div key={item.label} style={styles.navItem(item.label)} onClick={() => { setActiveTab(item.label); navigate(item.path); }}>
                         {item.icon} {item.label.charAt(0).toUpperCase() + item.label.slice(1)}
                     </div>
                 ))}
             </aside>
 
-            {/* Main Content */}
             <main style={styles.content}>
                 <div style={styles.header}>
                     <div>
@@ -272,23 +302,14 @@ const CaregiverDashboard = () => {
                     <div style={styles.profile}>
                         <button style={styles.iconButton} onClick={() => setShowSearch(prev => !prev)}><FaSearch /></button>
                         <button style={styles.iconButton} onClick={() => setShowNotifications(prev => !prev)}><FaBell /></button>
-
                         <div style={styles.profileWrap}>
                             <img src="image.png" alt="Profile" style={styles.profileImage} />
-                            <div style={styles.logoutText} onClick={() => navigate('/')}>
-                                <FaSignOutAlt /> Logout
-                            </div>
+                            <div style={styles.logoutText} onClick={() => navigate('/')}><FaSignOutAlt /> Logout</div>
                         </div>
 
                         {showSearch && (
                             <div style={styles.dropdown}>
-                                <input
-                                    type="text"
-                                    placeholder="Search patient..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    style={styles.input}
-                                />
+                                <input type="text" placeholder="Search patient..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={styles.input} />
                                 <button onClick={handleSearch} style={styles.searchBtn}>Search</button>
                                 {searchResult && (
                                     <div style={{ marginTop: '10px' }}>
@@ -313,40 +334,18 @@ const CaregiverDashboard = () => {
                     </div>
                 </div>
 
-                {/* KPI Cards */}
                 <div style={styles.kpiGrid}>
                     <div style={styles.kpiCard}><div>Total Patients</div><div style={styles.kpiNumber}>3</div></div>
                     <div style={styles.kpiCard}><div>Today's Appointments</div><div style={styles.kpiNumber}>1</div></div>
                     <div style={styles.kpiCard}><div>Rating</div><div style={styles.kpiNumber}><FaStar color="gold" /> 4.8</div></div>
                 </div>
 
-                {/* Dashboard Cards */}
                 <div style={styles.cardGrid}>
-                    <div style={styles.card}>
-                        <div style={styles.cardTitle}><FaUserFriends /> Assigned Patients</div>
-                        <ul>
-                            {assignedPatients.map((p, i) => (
-                                <li key={i}>{p.name} – {p.rate}</li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div style={styles.card} onClick={() => navigate('/appointments')}>
-                        <div style={styles.cardTitle}><FaCalendarAlt /> Upcoming Appointments</div>
-                        <p>June 21 – 2:00 PM with Albert Young</p>
-                    </div>
-                    <div style={styles.card}>
-                        <div style={styles.cardTitle}><FaUpload /> Upload Observations</div>
-                        <input type="file" onChange={handleFileUpload} />
-                    </div>
-                    <div style={styles.card}>
-                        <div style={styles.cardTitle}><FaVideo /> Start Video Call</div>
-                        <button style={styles.button} onClick={handleStartSession}>Start Session</button>
-                    </div>
-                    <div style={styles.card}>
-                        <div style={styles.cardTitle}><FaDollarSign /> Hourly Rate</div>
-                        <p>Current Rate: <strong>${rate}</strong></p>
-                        <button style={styles.button} onClick={handleUpdateRate}>Update Rate</button>
-                    </div>
+                    <div style={styles.card}><div style={styles.cardTitle}><FaUserFriends /> Assigned Patients</div><ul>{assignedPatients.map((p, i) => (<li key={i}>{p.name} – {p.rate}</li>))}</ul></div>
+                    <div style={styles.card} onClick={() => navigate('/appointments')}><div style={styles.cardTitle}><FaCalendarAlt /> Upcoming Appointments</div><p>June 21 – 2:00 PM with Albert Young</p></div>
+                    <div style={styles.card}><div style={styles.cardTitle}><FaUpload /> Upload Observations</div><input type="file" onChange={handleFileUpload} /></div>
+                    <div style={styles.card}><div style={styles.cardTitle}><FaVideo /> Start Video Call</div><button style={styles.button} onClick={handleStartSession}>Start Session</button></div>
+                    <div style={styles.card}><div style={styles.cardTitle}><FaDollarSign /> Hourly Rate</div><p>Current Rate: <strong>${rate}</strong></p><button style={styles.button} onClick={handleUpdateRate}>Update Rate</button></div>
                 </div>
             </main>
         </div>

@@ -29,10 +29,12 @@ const LoginPage = () => {
         try {
             const response = await fetch('http://localhost:5000/api/auth/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({ email, password }),
             });
-
+              
             const data = await response.json();
 
             if (!response.ok) {
@@ -40,7 +42,7 @@ const LoginPage = () => {
             } else {
                 setError('');
                 if (data.role === 'caregiver') {
-                    navigate('/caregiver-dashboard', { state: { username: data.name } });
+                    navigate('/caregiver-dashboard', { state: { username: data.name, email: data.email } });
                 } else if (data.role === 'patient') {
                     navigate('/patient-dashboard');
                 }

@@ -8,29 +8,18 @@ const router = express.Router();
 router.post('/signup', async (req, res) => {
     const { name, email, password, role } = req.body;
 
-    console.log('📨 Signup request received');
-    console.log('Data:', { name, email, role });
-
     try {
-        console.log('🔍 Checking if user exists...');
         const existingUser = await User.findOne({ email });
-        console.log('🔎 Find result:', existingUser);
-
         if (existingUser) {
             return res.status(400).json({ message: 'Email already exists' });
         }
 
-        console.log('🔐 Hashing password...');
         const hashedPassword = await bcrypt.hash(password, 10);
-
         const newUser = new User({ name, email, password: hashedPassword, role });
-        console.log('💾 Saving new user...');
-        await newUser.save();
-        console.log('✅ User saved successfully');
 
+        await newUser.save();
         res.status(201).json({ message: 'Signup successful' });
     } catch (err) {
-        console.error('❌ Signup failed:', err.message);
         res.status(500).json({ message: 'Signup failed', error: err.message });
     }
 });
@@ -39,25 +28,19 @@ router.post('/signup', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    console.log('📨 Login request received for:', email);
-
     try {
         const user = await User.findOne({ email });
-        console.log('🔍 Found user:', user);
-
         if (!user) return res.status(400).json({ message: 'Email not registered' });
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: 'Invalid password' });
 
-        console.log('✅ Login successful');
         res.status(200).json({
             message: 'Login successful',
             role: user.role,
             name: user.name,
         });
     } catch (err) {
-        console.error('❌ Login failed:', err.message);
         res.status(500).json({ message: 'Login failed', error: err.message });
     }
 });
@@ -65,8 +48,6 @@ router.post('/login', async (req, res) => {
 // ======= RESET PASSWORD =========
 router.post('/reset-password', async (req, res) => {
     const { email, newPassword } = req.body;
-
-    console.log('🔁 Reset password request for:', email);
 
     try {
         const user = await User.findOne({ email });
@@ -76,12 +57,28 @@ router.post('/reset-password', async (req, res) => {
         user.password = hashed;
         await user.save();
 
-        console.log('✅ Password reset successful');
         res.status(200).json({ message: 'Password updated successfully' });
     } catch (err) {
-        console.error('❌ Password reset failed:', err.message);
         res.status(500).json({ message: 'Password reset failed', error: err.message });
     }
 });
+
+// POST /api/auth/caregiver-by-email
+
+router.post('/caregiver-by-email', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const caregiver = await Caregiver.findOne({ email });
+        if (!caregiver) {
+            return res.status(404).json({ message: 'Caregiver not found' });
+        }
+        res.json({ _id: caregiver._id, hourlyRate: caregiver.hourlyRate || 0 });
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
 
 module.exports = router;
