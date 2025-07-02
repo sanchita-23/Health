@@ -1,0 +1,81 @@
+body {
+    background-color: #2c2f2c;
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.reminder-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #383b37;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.reminder-container h2 {
+    color: #fff;
+    margin-bottom: 25px;
+}
+
+.med-type-options,
+.day-options,
+.dose-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.med-type-options button,
+.day-options button,
+.dose-options button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    background-color: #4d524a;
+    color: white;
+    transition: 0.3s;
+}
+
+.med-type-options button.active,
+.day-options button.active,
+.dose-options button.active {
+    background-color: #ff5c33;
+}
+
+.input-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.input-section input,
+.input-section textarea {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background-color: #555851;
+    color: white;
+}
+
+input[type="time"],
+input[type="number"] {
+    width: 130px;
+}
+
+.add-btn {
+    background-color: #ff5c33;
+    color: #fff;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.add-btn:hover {
+    background-color: #ff774d; }
