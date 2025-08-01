@@ -7,10 +7,13 @@ import {
 } from 'react-icons/fa';
 
 const CaregiverDashboard = () => {
+    
     const location = useLocation();
     const navigate = useNavigate();
-    const username = location.state?.username || 'User';
-    const email = location.state?.email || '';
+
+    const username = location.state?.username || localStorage.getItem('name') || 'User';
+    const email = location.state?.email || localStorage.getItem('email') || '';
+    const userId = location.state?.userId || localStorage.getItem('userId') || '';
     
     const [activeTab, setActiveTab] = useState('dashboard');
     const [rate, setRate] = useState(0);
@@ -19,6 +22,10 @@ const CaregiverDashboard = () => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResult, setSearchResult] = useState(null);
+
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploadedFiles, setUploadedFiles] = useState([]); // NEW
+   
 
     const assignedPatients = [
         { name: 'Albert Young', rate: '$25/hr' },
@@ -44,7 +51,8 @@ const CaregiverDashboard = () => {
                 const data = await res.json();
                 if (data && data._id) {
                     setCaregiverId(data._id);  // SETS the id
-                    setRate(data.hourlyRate ? parseFloat(data.hourlyRate).toFixed(2) : "0.00");
+                    setRate(data.hourlyRate !== undefined ? parseFloat(data.hourlyRate).toFixed(2) : "0.00");
+                    console.log("Fetched caregiver:",data);
                 }
             } catch (err) {
                 console.error('Error fetching caregiver:', err);
@@ -53,41 +61,81 @@ const CaregiverDashboard = () => {
     
         fetchCaregiver();
     }, [location.state?.email]);
+
+
+
     
     
 
 
     // ✅ Save updated rate to backend
     const updateRateInBackend = async (newRate) => {
-    try {
-        console.log('caregiverId:', caregiverId); 
-        await fetch(`http://localhost:5000/api/dashboard/update-rate/${caregiverId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rate: newRate }),
-        });
+        try {
+            const res = await fetch(`http://localhost:5000/api/dashboard/update-rate/${caregiverId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rate: newRate }),
+      });
+
+        const data = await res.json();
+        if (data?.hourlyRate !== undefined) {
+            setRate(parseFloat(data.hourlyRate).toFixed(2)); 
+            console.log("backend returned:",data);
+        }
     } catch (error) {
         console.error('Failed to update rate in backend:', error);
     }
 };
 
+// ✅ Rate update handler
+const handleUpdateRate = async () => {
+    const newRate = prompt("Enter new hourly rate ($):", rate);
+    if (newRate && !isNaN(newRate)) {
+        const formattedRate = parseFloat(newRate).toFixed(2);
+        await updateRateInBackend(formattedRate);
+        alert("Hourly rate updated successfully!");
+    } else if (newRate !== null) {
+        alert("Invalid input. Please enter a valid number.");
+    }
+};
+       
+         
 
-    // ✅ Rate update handler
-    const handleUpdateRate = async () => {
-        const newRate = prompt("Enter new hourly rate ($):", rate);
-        if (newRate && !isNaN(newRate)) {
-            const formattedRate = parseFloat(newRate).toFixed(2);
-            setRate(formattedRate);
-            await updateRateInBackend(formattedRate);
-            alert("Rate updated.");
-        } else if (newRate !== null) {
-            alert("Invalid input.");
+    // Fetch uploaded observation files on load
+    useEffect(() => {
+        if (userId) {
+            fetch(`http://localhost:5000/api/observations?userId=${userId}`)
+            .then(res => res.json())
+                .then(data => {
+                    if (data.success) setUploadedFiles(data.files);
+                })
+                .catch(err => console.error('Failed to fetch observations:', err));
         }
-    };
+    }, [userId]);
 
-    const handleFileUpload = (e) => {
+    // Upload observation file to backend
+    const handleFileUpload = async (e) => {
         const file = e.target.files[0];
-        if (file) alert(`Uploaded: ${file.name}`);
+        if (!file || !userId) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('userId', userId);
+
+        try {
+            const res = await fetch('http://localhost:5000/api/observations/upload', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Uploaded: ${ file.name }`);
+                setUploadedFiles(prev => [...prev, data.fileName]);
+            }
+        } catch (err) {
+            console.error('Upload failed:', err);
+            alert("Upload failed");
+        }
     };
 
     const handleStartSession = () => alert("Starting secure session...");
@@ -340,10 +388,24 @@ const CaregiverDashboard = () => {
                     <div style={styles.kpiCard}><div>Rating</div><div style={styles.kpiNumber}><FaStar color="gold" /> 4.8</div></div>
                 </div>
 
+      
+
                 <div style={styles.cardGrid}>
                     <div style={styles.card}><div style={styles.cardTitle}><FaUserFriends /> Assigned Patients</div><ul>{assignedPatients.map((p, i) => (<li key={i}>{p.name} – {p.rate}</li>))}</ul></div>
                     <div style={styles.card} onClick={() => navigate('/appointments')}><div style={styles.cardTitle}><FaCalendarAlt /> Upcoming Appointments</div><p>June 21 – 2:00 PM with Albert Young</p></div>
-                    <div style={styles.card}><div style={styles.cardTitle}><FaUpload /> Upload Observations</div><input type="file" onChange={handleFileUpload} /></div>
+                    <div style={styles.card}>
+                        <div style={styles.cardTitle}><FaUpload /> Upload Observations</div>
+                        <input type="file" onChange={handleFileUpload} />
+                        <ul style={{ marginTop: '10px' }}>
+                            {uploadedFiles.map((file, index) => (
+                                <li key={index}>
+                                    <a href={`http://localhost:5000/uploads/${file}`} target="_blank" rel="noopener noreferrer">
+                                        {file}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                     <div style={styles.card}><div style={styles.cardTitle}><FaVideo /> Start Video Call</div><button style={styles.button} onClick={handleStartSession}>Start Session</button></div>
                     <div style={styles.card}><div style={styles.cardTitle}><FaDollarSign /> Hourly Rate</div><p>Current Rate: <strong>${rate}</strong></p><button style={styles.button} onClick={handleUpdateRate}>Update Rate</button></div>
                 </div>
