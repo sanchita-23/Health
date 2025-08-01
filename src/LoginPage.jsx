@@ -13,19 +13,30 @@ const LoginPage = () => {
             return;
         }
 
-        // 🔐 Hardcoded test credentials for offline use
+        // 🔐 Offline test accounts (no backend)
         if (email === 'caregiver@test.com' && password === '123456') {
+            localStorage.setItem("userId", "offline-caregiver-id");
+            localStorage.setItem("name", "Caregiver Test");
+            localStorage.setItem("email", email);
+            localStorage.setItem("role", "caregiver");
+
             setError('');
             navigate('/caregiver-dashboard', { state: { username: 'Caregiver Test' } });
             return;
         }
 
         if (email === 'patient@test.com' && password === '123456') {
+            localStorage.setItem("userId", "offline-patient-id");
+            localStorage.setItem("name", "Patient Test");
+            localStorage.setItem("email", email);
+            localStorage.setItem("role", "patient");
+
             setError('');
             navigate('/patient-dashboard', { state: { username: 'Patient Test' } });
             return;
         }
 
+        // 🔗 Real login using backend
         try {
             const response = await fetch('http://localhost:5000/api/auth/login', {
                 method: 'POST',
@@ -34,15 +45,23 @@ const LoginPage = () => {
                 },
                 body: JSON.stringify({ email, password }),
             });
-              
+
             const data = await response.json();
 
             if (!response.ok) {
                 setError(data.message || 'Login failed.');
             } else {
                 setError('');
+
+                // ✅ Save to localStorage for reuse across app
+                localStorage.setItem("userId", data.userId);
+                localStorage.setItem("name", data.name);
+                localStorage.setItem("email", data.email);
+                localStorage.setItem("role", data.role);
+
+                // ✅ Navigate by role
                 if (data.role === 'caregiver') {
-                    navigate('/caregiver-dashboard', { state: { username: data.name, email: data.email } });
+                    navigate('/caregiver-dashboard', { state: { username: data.name, email: data.email, userId: data.userId } });
                 } else if (data.role === 'patient') {
                     navigate('/patient-dashboard');
                 }
