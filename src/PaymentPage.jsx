@@ -1,24 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+
+// Load your Stripe publishable key here
+const stripePromise = loadStripe('pk_test_51Rr1JS3Kc2os4yEUzXtsRGuB54kTAFyJ93POplqifWcR6UxPm5U3bHDjEmYX6ccsLFsuLCOUyymH7oHCYFrkeSZp00k5YeldXd'); 
 
 const PaymentPage = () => {
-    const [form, setForm] = useState({
-        name: '',
-        cardNumber: '',
-        expiry: '',
-        cvv: ''
-    });
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        alert("Payment processed successfully (simulated).");
-        // Add payment gateway integration here (e.g. Stripe or Razorpay)
-    };
-
     const styles = {
         page: {
             minHeight: '100vh',
@@ -36,14 +22,6 @@ const PaymentPage = () => {
             width: '100%',
             maxWidth: '400px',
         },
-        input: {
-            width: '100%',
-            padding: '10px',
-            marginBottom: '15px',
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            fontSize: '1rem',
-        },
         button: {
             width: '100%',
             padding: '12px',
@@ -53,6 +31,7 @@ const PaymentPage = () => {
             borderRadius: '8px',
             fontWeight: '600',
             cursor: 'pointer',
+            fontSize: '1rem',
         },
         title: {
             fontSize: '1.5rem',
@@ -63,50 +42,37 @@ const PaymentPage = () => {
         }
     };
 
+    const handleCheckout = async () => {
+        const stripe = await stripePromise;
+
+        // You can dynamically pass email or amount if needed
+        const response = await fetch('http://localhost:5000/api/payment/create-checkout-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                amount: 9.99,  // in USD
+                email: 'testuser@healthbuddy.com'
+            }),
+        });
+
+        const session = await response.json();
+        const result = await stripe.redirectToCheckout({ sessionId: session.id });
+
+        if (result.error) {
+            alert(result.error.message);
+        }
+    };
+
     return (
         <div style={styles.page}>
-            <form style={styles.form} onSubmit={handleSubmit}>
+            <div style={styles.form}>
                 <div style={styles.title}>Upgrade to Premium</div>
-
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Cardholder Name"
-                    style={styles.input}
-                    value={form.name}
-                    onChange={handleChange}
-                    required
-                />
-                <input
-                    type="text"
-                    name="cardNumber"
-                    placeholder="Card Number"
-                    style={styles.input}
-                    value={form.cardNumber}
-                    onChange={handleChange}
-                    required
-                />
-                <input
-                    type="text"
-                    name="expiry"
-                    placeholder="Expiry Date (MM/YY)"
-                    style={styles.input}
-                    value={form.expiry}
-                    onChange={handleChange}
-                    required
-                />
-                <input
-                    type="password"
-                    name="cvv"
-                    placeholder="CVV"
-                    style={styles.input}
-                    value={form.cvv}
-                    onChange={handleChange}
-                    required
-                />
-
-                <button type="submit" style={styles.button}>Pay $9.99 / Month</button>
-            </form>
+                <button style={styles.button} onClick={handleCheckout}>
+                    Pay $9.99 / Month
+                </button>
+            </div>
         </div>
     );
 };
